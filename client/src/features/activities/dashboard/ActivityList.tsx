@@ -5,14 +5,13 @@ import ActivityCard from "./ActivityCard.tsx";
 interface ActivityListProps {
     activities: Activity[];
     handleActivitySelect: (id: string) => void;
-    handleDeleteActivity: (id: string) => void;
 }
 
-export default function ActivityList({activities, handleDeleteActivity, handleActivitySelect}: ActivityListProps) {
+export default function ActivityList({activities, handleActivitySelect}: ActivityListProps) {
     return(
     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
         {activities.map(activity => (
-            <ActivityCard key={activity.id} handleDeleteActivity={handleDeleteActivity} activity={activity} handleActivitySelect={handleActivitySelect}/>
+            <ActivityCard key={activity.id} activity={activity} handleActivitySelect={handleActivitySelect}/>
         ))}
     </Box>
     );

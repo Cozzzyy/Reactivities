@@ -2,17 +2,19 @@ import {Button, Paper, TextField, Typography} from "@mui/material";
 import Box from "@mui/material/Box";
 import type {Activity} from "../../../lib/types";
 import type {FormEvent} from "react";
+import {useActivities} from "../../../lib/hooks/useActivities.ts";
 
 
 interface ActivityFormProps {
     activity? : Activity
     handleCloseForm: () => void;
-    submitForm: (activity: Activity) => void;
 }
 
-export default function ActivityForm({activity, handleCloseForm, submitForm}: ActivityFormProps) {
+export default function ActivityForm({activity, handleCloseForm}: ActivityFormProps) {
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const {updateActivity, createActivity} = useActivities();
+
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         const formData = new FormData(event.currentTarget);
@@ -28,9 +30,12 @@ export default function ActivityForm({activity, handleCloseForm, submitForm}: Ac
             }
         });
 
-        if(activity) data.id = activity.id; // Preserve the ID if editing an existing activity
-
-        submitForm(data as unknown as Activity);
+        if(activity){
+            data.id = activity.id;
+            await updateActivity.mutateAsync(data as unknown as Activity);
+        }else{
+            await createActivity.mutateAsync(data as unknown as Activity);
+        }
 
         handleCloseForm();
     }
@@ -63,7 +68,7 @@ export default function ActivityForm({activity, handleCloseForm, submitForm}: Ac
                 <TextField name={"venue"} defaultValue={activity?.venue} label={'Venue'}></TextField>
                 <Box display={'flex'} justifyContent={'end'} gap={3}>
                     <Button onClick={handleCloseForm} color={'inherit'}>Cancel</Button>
-                    <Button type={"submit"} color={'success'} variant={'contained'}>Submit</Button>
+                    <Button disabled={updateActivity.isPending || createActivity.isPending} type={"submit"} color={'success'} variant={'contained'}>Submit</Button>
                 </Box>
             </Box>
         </Paper>
