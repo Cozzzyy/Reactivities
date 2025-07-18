@@ -2,13 +2,13 @@ import type {Activity} from "../../../lib/types";
 import {Button, Card, CardActions, CardContent, Chip, Typography} from "@mui/material";
 import Box from "@mui/material/Box";
 import {useActivities} from "../../../lib/hooks/useActivities.ts";
+import { Link } from "react-router";
 
 interface ActivityCardProps {
     activity: Activity;
-    handleActivitySelect: (id: string) => void;
 }
 
-export default function ActivityCard({activity, handleActivitySelect}: ActivityCardProps) {
+export default function ActivityCard({activity}: ActivityCardProps) {
 
     const {deleteActivity} = useActivities();
 
@@ -28,7 +28,7 @@ export default function ActivityCard({activity, handleActivitySelect}: ActivityC
             <CardActions sx={{display: 'flex', justifyContent: 'space-between', pb: 2}}>
                 <Chip label={activity.category} variant="outlined"/>
                 <Box sx={{display: 'flex', gap: 1}}>
-                    <Button onClick={() => handleActivitySelect(activity.id)} size="medium" variant="contained">View</Button>
+                    <Button component={Link} to={`/activities/${activity.id}`} onClick={() => {}} size="medium" variant="contained">View</Button>
                 <Button disabled={deleteActivity.isPending} onClick={() => handleDeleteActivity(activity.id)} size="medium" variant="outlined" color={'error'}>Delete</Button>
                 </Box>
             </CardActions>

@@ -3,16 +3,12 @@ import Box from "@mui/material/Box";
 import type {Activity} from "../../../lib/types";
 import type {FormEvent} from "react";
 import {useActivities} from "../../../lib/hooks/useActivities.ts";
+import {useNavigate, useParams} from "react-router";
 
-
-interface ActivityFormProps {
-    activity? : Activity
-    handleCloseForm: () => void;
-}
-
-export default function ActivityForm({activity, handleCloseForm}: ActivityFormProps) {
-
-    const {updateActivity, createActivity} = useActivities();
+export default function ActivityForm() {
+    const navigator = useNavigate();
+    const {id} = useParams();
+    const {activity,updateActivity, createActivity} = useActivities(id);
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -33,11 +29,13 @@ export default function ActivityForm({activity, handleCloseForm}: ActivityFormPr
         if(activity){
             data.id = activity.id;
             await updateActivity.mutateAsync(data as unknown as Activity);
+            navigator('/activities/' + activity.id);
         }else{
-            await createActivity.mutateAsync(data as unknown as Activity);
-        }
+            createActivity.mutate(data as unknown as Activity, {
+                onSuccess: (id) => navigator('/activities'+ `/${id}`),
+            })
 
-        handleCloseForm();
+        }
     }
 
     function formatDateForInput(date?: string) {
@@ -52,7 +50,7 @@ export default function ActivityForm({activity, handleCloseForm}: ActivityFormPr
     return (
         <Paper sx={{borderRadius: 3, p: 3}}>
             <Typography variant={'h5'} gutterBottom color={"primary"}>
-                Create activity
+                {activity ? 'Edit Activity' : 'Create Activity'}
             </Typography>
             <Box component={'form'} onSubmit={handleSubmit} display={'flex'} flexDirection={'column'} gap={3}>
                 <TextField name={"title"} defaultValue={activity?.title} label={'Title'}></TextField>
@@ -67,8 +65,8 @@ export default function ActivityForm({activity, handleCloseForm}: ActivityFormPr
                 <TextField name={"city"} defaultValue={activity?.city} label={'City'}></TextField>
                 <TextField name={"venue"} defaultValue={activity?.venue} label={'Venue'}></TextField>
                 <Box display={'flex'} justifyContent={'end'} gap={3}>
-                    <Button onClick={handleCloseForm} color={'inherit'}>Cancel</Button>
-                    <Button disabled={updateActivity.isPending || createActivity.isPending} type={"submit"} color={'success'} variant={'contained'}>Submit</Button>
+                    <Button  onClick={() => navigator('/activities')} color={'inherit'}>Cancel</Button>
+                    <Button  disabled={updateActivity.isPending || createActivity.isPending} type={"submit"} color={'success'} variant={'contained'}>Submit</Button>
                 </Box>
             </Box>
         </Paper>
