@@ -18,7 +18,7 @@ export default function ActivityCard({activity}: ActivityCardProps) {
     const color = isHost ? 'secondary' : isGoing ? 'warning' : 'default';
 
     return (
-        <Card sx={{borderRadius: 3}}>
+        <Card sx={{borderRadius: 3, bgcolor: 'secondary.main'}}>
             <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
                 <CardHeader
                     avatar={<Avatar sx={{height: 80, width: 80}}/>}
@@ -50,7 +50,7 @@ export default function ActivityCard({activity}: ActivityCardProps) {
                     <Typography variant='body2'>{activity.venue}</Typography>
                 </Box>
                 <Divider/>
-                <Box display={'flex'} gap={2} sx={{backgroundColor: 'grey.200', py: 3, pl: 2}}>
+                <Box display={'flex'} gap={2} sx={{bgColor:'background.main',py: 3, pl: 2}}>
                     Attendees go here
                 </Box>
             </CardContent>

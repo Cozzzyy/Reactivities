@@ -10,7 +10,7 @@ function App() {
 
 
     return (
-        <Box sx={{bgcolor: '#e6e5e5', minHeight: '100vh'}}>
+        <Box sx={{bgcolor: 'background.default', minHeight: '100vh'}}>
             <CssBaseline/>
             {location.pathname === '/' ? <HomePage/> : (
                 <>
