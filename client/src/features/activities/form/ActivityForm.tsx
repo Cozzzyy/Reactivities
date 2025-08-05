@@ -1,41 +1,31 @@
-import {Button, Paper, TextField, Typography} from "@mui/material";
+import {Button, Paper, Typography} from "@mui/material";
 import Box from "@mui/material/Box";
-import type {Activity} from "../../../lib/types";
-import type {FormEvent} from "react";
 import {useActivities} from "../../../lib/hooks/useActivities.ts";
 import {useNavigate, useParams} from "react-router";
+import {useForm} from "react-hook-form";
+import {useEffect} from "react";
+import {activitySchema, type ActivitySchema} from "../../../lib/schemas/activitySchema.ts";
+import {zodResolver} from "@hookform/resolvers/zod";
+import TextInput from "../../../app/shared/components/TextInput.tsx";
+import SelectInput from "../../../app/shared/components/SelectInput.tsx";
+import {categoryOptions} from "./categoryOptions.ts";
 
 export default function ActivityForm() {
+    const { reset, handleSubmit, control} = useForm<ActivitySchema>({
+        mode: 'onTouched',
+        resolver: zodResolver(activitySchema)
+    })
     const navigator = useNavigate();
     const {id} = useParams();
     const {activity,updateActivity, createActivity} = useActivities(id);
 
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    useEffect(() => {
+        if(activity) reset(activity);
+    },[activity, reset]);
 
-        const formData = new FormData(event.currentTarget);
 
-        const data : {[key: string]: FormDataEntryValue} = {}
-        formData.forEach((value, key) => {
-            if (key === 'date') {
-                const dateValue = value as string;
-                const dateObj = new Date(dateValue);
-                data[key] = isNaN(dateObj.getTime()) ? '' : dateObj.toISOString();
-            } else {
-                data[key] = value;
-            }
-        });
-
-        if(activity){
-            data.id = activity.id;
-            await updateActivity.mutateAsync(data as unknown as Activity);
-            navigator('/activities/' + activity.id);
-        }else{
-            createActivity.mutate(data as unknown as Activity, {
-                onSuccess: (id) => navigator('/activities'+ `/${id}`),
-            })
-
-        }
+    const onSubmit = (data: ActivitySchema) => {
+        console.log(data);
     }
 
     function formatDateForInput(date?: string) {
@@ -52,21 +42,22 @@ export default function ActivityForm() {
             <Typography variant={'h5'} gutterBottom color={"primary"}>
                 {activity ? 'Edit Activity' : 'Create Activity'}
             </Typography>
-            <Box component={'form'} onSubmit={handleSubmit} display={'flex'} flexDirection={'column'} gap={3}>
-                <TextField name={"title"} defaultValue={activity?.title} label={'Title'}></TextField>
-                <TextField name={"description"} defaultValue={activity?.description} multiline rows={3} label={'Description'}></TextField>
-                <TextField name={"category"} defaultValue={activity?.category} label={'Category'}></TextField>
-                <TextField
-                    name={"date"}
-                    defaultValue={formatDateForInput(activity?.date)}
+            <Box component={'form'} onSubmit={handleSubmit(onSubmit)} display={'flex'} flexDirection={'column'} gap={3}>
+                <TextInput name="title" label='Title' control={control} defaultValue={activity?.title || ''} />
+                <TextInput name="description" label='Description'  control={control} defaultValue={activity?.description || ''} multiline rows={3} />
+                <SelectInput label='Category' control={control} name={'category'} items={categoryOptions}/>
+                <TextInput
+                    name="date"
                     label="Date"
+                    control={control}
+                    defaultValue={formatDateForInput(activity?.date)}
                     type="datetime-local"
                 />
-                <TextField name={"city"} defaultValue={activity?.city} label={'City'}></TextField>
-                <TextField name={"venue"} defaultValue={activity?.venue} label={'Venue'}></TextField>
+                <TextInput name="city" label='City' control={control} defaultValue={activity?.city || ''} />
+                <TextInput name="venue" label='Venue' control={control} defaultValue={activity?.venue || ''} />
                 <Box display={'flex'} justifyContent={'end'} gap={3}>
-                    <Button  onClick={() => navigator('/activities')} color={'inherit'}>Cancel</Button>
-                    <Button  disabled={updateActivity.isPending || createActivity.isPending} type={"submit"} color={'success'} variant={'contained'}>Submit</Button>
+                    <Button onClick={() => navigator('/activities')} color={'inherit'}>Cancel</Button>
+                    <Button disabled={updateActivity.isPending || createActivity.isPending} type={"submit"} color={'success'} variant={'contained'}>Submit</Button>
                 </Box>
             </Box>
         </Paper>
