@@ -19,7 +19,7 @@ export default function SelectInput<T extends FieldValues>(props: Props<T>) {
                 onChange={field.onChange}
             >
                 {items.map((option) => (
-                    <MenuItem key={option.text} value={option.text}>
+                    <MenuItem key={option.text} value={option.value}>
                         {option.text}
                     </MenuItem>
                 ))}

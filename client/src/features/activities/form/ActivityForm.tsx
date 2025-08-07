@@ -9,6 +9,8 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import TextInput from "../../../app/shared/components/TextInput.tsx";
 import SelectInput from "../../../app/shared/components/SelectInput.tsx";
 import {categoryOptions} from "./categoryOptions.ts";
+import DateTimeInput from "../../../app/shared/components/DateTimeInput.tsx";
+import LocationInput from "../../../app/shared/components/LocationInput.tsx";
 
 export default function ActivityForm() {
     const { reset, handleSubmit, control} = useForm<ActivitySchema>({
@@ -20,22 +22,45 @@ export default function ActivityForm() {
     const {activity,updateActivity, createActivity} = useActivities(id);
 
     useEffect(() => {
-        if(activity) reset(activity);
+        if(activity) reset({
+            ...activity,
+            location: {
+                venue: activity.venue,
+                city: activity.city || '',
+                latitude: activity.latitude,
+                longitude: activity.longitude
+            }
+        });
     },[activity, reset]);
 
 
-    const onSubmit = (data: ActivitySchema) => {
-        console.log(data);
-    }
+    const onSubmit = async (data: ActivitySchema) => {
+        const { location, ...rest} = data;
+        const flattendData = {
+            ...rest, ...location};
 
-    function formatDateForInput(date?: string) {
-        if (!date) return '';
-        const d = new Date(date);
-        // Pad month, day, hours, minutes
-        const pad = (n: number) => n.toString().padStart(2, '0');
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
+        try {
+            if (activity) {
+                updateActivity.mutate({...activity, ...flattendData, id: activity.id}, {
+                    onSuccess: () => {
+                        navigator('/activities');
+                    }
+                });
+            } else {
+                createActivity.mutate(flattendData, {
+                    onSuccess: () => {
+                        navigator('/activities');
+                    }
+                });
+            }
+            navigator('/activities');
+        } catch (error) {
+            console.error('Error submitting activity:', error);
+            // Optionally, you can show an error message to the user here
+        }
 
+
+    }
 
     return (
         <Paper sx={{borderRadius: 3, p: 3}}>
@@ -45,16 +70,15 @@ export default function ActivityForm() {
             <Box component={'form'} onSubmit={handleSubmit(onSubmit)} display={'flex'} flexDirection={'column'} gap={3}>
                 <TextInput name="title" label='Title' control={control} defaultValue={activity?.title || ''} />
                 <TextInput name="description" label='Description'  control={control} defaultValue={activity?.description || ''} multiline rows={3} />
-                <SelectInput label='Category' control={control} name={'category'} items={categoryOptions}/>
-                <TextInput
-                    name="date"
-                    label="Date"
-                    control={control}
-                    defaultValue={formatDateForInput(activity?.date)}
-                    type="datetime-local"
-                />
-                <TextInput name="city" label='City' control={control} defaultValue={activity?.city || ''} />
-                <TextInput name="venue" label='Venue' control={control} defaultValue={activity?.venue || ''} />
+                <Box display={'flex'} gap={2}>
+                    <SelectInput label='Category' control={control} name={'category'} items={categoryOptions} defaultValue={activity?.category || ''}/>
+                    <DateTimeInput
+                        name="date"
+                        label="Date"
+                        control={control}
+                    />
+                </Box>
+                <LocationInput control={control} label={'Enter the location'} name="location" />
                 <Box display={'flex'} justifyContent={'end'} gap={3}>
                     <Button onClick={() => navigator('/activities')} color={'inherit'}>Cancel</Button>
                     <Button disabled={updateActivity.isPending || createActivity.isPending} type={"submit"} color={'success'} variant={'contained'}>Submit</Button>
