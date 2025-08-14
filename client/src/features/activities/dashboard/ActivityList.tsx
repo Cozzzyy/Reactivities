@@ -5,9 +5,9 @@ import {Typography} from "@mui/material";
 
 
 export default function ActivityList() {
-    const {activities, isPending} = useActivities();
+    const {activities, isLoading} = useActivities();
 
-    if(!activities || isPending) return <Typography>Loading activities...</Typography>;
+    if(!activities || isLoading) return <Typography>Loading activities...</Typography>;
 
     return(
     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>

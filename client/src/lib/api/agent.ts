@@ -6,7 +6,8 @@ import {router} from "../../app/router/Routes.tsx";
 const sleep = (delay: number) => new Promise(resolve => setTimeout(resolve, delay));
 
 const agent = axios.create({
-    baseURL: import.meta.env.VITE_API_URL
+    baseURL: import.meta.env.VITE_API_URL,
+    withCredentials: true,
 });
 
 agent.interceptors.request.use(async config => {
@@ -38,9 +39,6 @@ agent.interceptors.response.use(
                 }else {
                     toast.error(data.message || 'Bad Request');
                 }
-                break;
-            case 401:
-                toast.error('Unauthorised');
                 break;
             case 404:
                 await router.navigate('/not-found');
